@@ -1577,7 +1577,18 @@ impl Config {
         if Self::is_disable_unlock_pin() {
             return String::new();
         }
-        CONFIG2.read().unwrap().unlock_pin.clone()
+        let pin = CONFIG2.read().unwrap().unlock_pin.clone();
+        if !pin.is_empty() {
+            return pin;
+        }
+        // Fall back to a preset PIN from the signed custom-client config
+        // (see read_custom_client()), same pattern as the preset password.
+        HARD_SETTINGS
+            .read()
+            .unwrap()
+            .get("unlock-pin")
+            .cloned()
+            .unwrap_or_default()
     }
 
     pub fn set_unlock_pin(pin: &str) {
